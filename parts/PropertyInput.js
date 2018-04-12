@@ -1,4 +1,4 @@
-import {_debounce} from '../../utilities/_debounce.js';
+import {_debounce} from '../utilities/_debounce.js';
 import {Part} from './Part.js';
 
 /**

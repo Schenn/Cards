@@ -1,5 +1,5 @@
 import {Part} from './Part.js';
-import {Observation} from '../observables/Observation.js';
+import {Observation} from '../utilities/Observation.js';
 
 /**
  * @todo Clean Up. Callbacks memoization here seems redundant.

@@ -4,7 +4,7 @@ import {CardComponent} from './components/cards/CardComponent.js';
 
 import {standardComponents} from "./components/standard.js";
 
-import {registerParts} from './components/parts/registerParts.js';
+import {registerParts} from './parts/registerParts.js';
 
 import {CustomElementCreator} from './Systems/CustomElementCreator.js';
 
