@@ -33,6 +33,13 @@ let uniqueObservationId = 0;
  *
  *  Generic enough to be used on any element, but Cards primarily uses this in the PropertyObserver
  *      to watch for attribute changes on a component element.
+ *
+ * @todo Add an optional param to debounce the mutation callbacks.
+ * @todo Add a child list change filter so that the callback is only triggered when the childlist passes the filter.
+ *        -- onComponentReady seems like a good place for this. When a card hears the creation of a component it can apply a ChildListFilterComponent to the observer.
+ *            -- onReady should be a definable attribute of any custom-element. Regardless if its a Card, CardComponent, or Part.
+ * @todo Attribute "old" and "new" attributes should be observed independently so that some attribute callbacks can specify that they want the original value over the new.
+ *
  */
 export class Observation {
 
@@ -57,7 +64,7 @@ export class Observation {
    *  in addition to the target itself.
    */
   includeChildren(){
-    observationOptions[this.id].subtree = true;
+    observationOptions[this.__id].subtree = true;
   }
 
   /**
@@ -147,7 +154,8 @@ export class Observation {
         textOpts.subtree = true;
       }
       // Observe the text data of the first (and presumably only) child of the node
-      observations[this.__id].observe(node.firstChild.data, textOpts);
+      // @todo Instead of assuming its the first and only child, find the first text node in the element contents.
+      observations[this.__id].observe(node.firstChild, textOpts);
     }
 
     // If the Mutation Observer should watch the attributes or child list of the target.
@@ -172,37 +180,58 @@ export class Observation {
     }
   }
 
+  onAttributeMutation(mutation){
+    let att = mutation.attributeName;
+    // If there's a callback to trigger for this attribute mutation.
+    if(typeof callbacks[this.__id][att] !== "undefined"){
+      let val = observationOptions[this.__id].attributeOldValue ?
+          mutation.oldValue :
+          mutation.target.getAttribute(att);
+
+      callbacks[this.__id][att](val);
+    }
+  }
+
+  onChildListMutation(mutation){
+    // If a child was added to the node
+    if(typeof callbacks[this.__id].onChildAdded !== "undefined" &&
+        mutation.addedNodes.length > 0){
+      callbacks[this.__id].onChildAdded(mutation.addedNodes);
+    }
+    // If a child was removed from the node.
+    if(typeof callbacks[this.__id].onChildRemoved !== "undefined" &&
+        mutation.removedNodes.length > 0){
+      callbacks[this.__id].onChildRemoved(mutation.removedNodes);
+    }
+  }
+
+  onTextMutation(mutation){
+    if(typeof callbacks[this.__id].onTextChanged !== "undefined"){
+      let val = observationOptions[this.__id].characterDataOldValue ?
+          mutation.oldValue :
+          mutation.target.data;
+      callbacks[this.__id].onTextChanged(val);
+    }
+  }
+
   /**
    * The intermediate callback between this observation and the intended callback.
    * Triggered when the Mutation Observer reports a mutation event.
    *
    * @param {NamedNodeMap} mutationList
-   * @todo Pass the changed value of the attribute into the callback
-   * @todo Pass the added and removed nodes to the callbacks.
+   * @todo Allow for individual attributes to use old or new values.
    */
   onMutation(mutationList){
     // Usually only one but can contain more if js was delayed.
     for(let mutation of mutationList){
       // If the mutation is an attribute mutation
       if(mutation.type === "attributes"){
-        let att = mutation.attributeName;
-        console.log(mutation);
-        // If there's a callback to trigger for this attribute mutation.
-        if(typeof callbacks[this.__id][att] !== "undefined"){
-          callbacks[this.__id][att]();
-        }
+        this.onAttributeMutation(mutation);
         // Else if a child was added or removed to the Node.
       } else if(mutation.type === "childList"){
-        // If a child was added to the node
-        if(typeof callbacks[this.__id].onChildAdded &&
-            mutation.addedNodes.length > 0){
-          callbacks[this.__id].onChildAdded();
-        }
-        // If a child was removed from the node.
-        if(typeof callbacks[this.__id].onChildRemoved &&
-            mutation.removedNodes.length > 0){
-          callbacks[this.__id].onChildRemoved();
-        }
+        this.onChildListMutation(mutation);
+      } else if(mutation.type === "characterData") {
+        this.onTextMutation(mutation);
       }
     }
   }
