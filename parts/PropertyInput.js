@@ -15,12 +15,10 @@ import {Part} from './Part.js';
  * @param {*} defaultValue Must be a valid value for the input to use.
  * @returns {Function} The debounce reference.  Each event request refreshes the debounce timeout.
  */
-const propChangeDebounce = function(property, component, defaultValue = ''){
+const propChangeDebounce = function(property, component){
   let cb = (e)=>{
     // If the incoming value is empty, use the default value instead.
-    component[property] = e.target.value.trim() === '' ?
-      defaultValue :
-      e.target.value;
+    component.setAttribute(property, e.target.value);
   };
   return _debounce(cb, 100);
 };
@@ -72,6 +70,11 @@ const applyAtts = function(input, attributes){
  * @extends {Part}
  */
 export class PropertyInput extends Part {
+
+  get value(){
+    return this.input.value;
+  }
+
   /**
    * Only called when the element is appended to the dom.
    *
@@ -91,15 +94,18 @@ export class PropertyInput extends Part {
     applyAtts(input, this.attributes);
 
     // The parentComponent is the dom node for the parent component's custom element.
-    // @todo Use the custom element, not the custom elements associated component.
-    const component = this.parentComponent().getComponent();
+    const component = this.parentComponent();
     const property = this.dataset.property;
 
     // Update the component property When the user releases a key from their keyboard while the input is focused.
-    input.addEventListener("keyup", propChangeDebounce(property, component, this.attributes.defaultvalue.value));
+    input.addEventListener("keyup", propChangeDebounce(property, component));
+
+    input.value = component.getAttribute(property);
+
+    this.input = input;
 
     // Add the 'input' to the dom.
-    this.appendChild(input);
+    this.appendChild(this.input);
 
   }
 }
