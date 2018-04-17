@@ -14,6 +14,8 @@
  *
  * @see {PropertyInput} For details on how the Property Input Part works
  * @see {PropertyObserver} For details on how the Property Observer Part works.
+ *
+ * @todo - Give Part to have a "target" optional attribute.  Target specifies a selector to use for finding the parent component.
  */
 export class Part extends HTMLElement {
   constructor(){
@@ -88,6 +90,6 @@ export class Part extends HTMLElement {
    * @throws if not overridden.
    */
   render(){
-    throw "Cannot render an abstract part. You need to create your own custom part class.";
+    throw `Cannot render an abstract part. You need to create your own custom part class. Invalid Tag: ${this.tagName}`;
   }
 }
