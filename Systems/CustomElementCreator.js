@@ -7,6 +7,8 @@
  * @todo Clean this up!!!
  */
 
+import {Card} from '../cards/Card.js';
+
 function mergedElement(cardComponent, element){
   let observables = cardComponent.observableProperties;
 
@@ -58,6 +60,8 @@ function mergedElement(cardComponent, element){
 // A simple counter to correlate instance private properties with instances.
 // todo: Find a better way to manage this, such as Symbols.
 let uniqueIds = 0;
+
+let cardMap = new WeakMap();
 
 /**
  * Define the unique particulars of a custom element using a related card component class as a guide.
@@ -148,6 +152,10 @@ function scopedCustomElement (cardComponent, id){
       return observables;
     }
 
+    get card(){
+      return cardMap[this.__id];
+    }
+
     /**
      * Get the CardComponent Associated with this custom element.
      *
@@ -188,6 +196,24 @@ function scopedCustomElement (cardComponent, id){
         }
       });
       this.parentNode.dispatchEvent(connectedEvent);
+      let found = false;
+      let parent = this.parentNode;
+      while(!found ){
+        // Don't go any further if we've somehow managed this. Stop the loop, the parent card is missing.
+        if(parent.nodeName === "body"){
+          break;
+        }
+        // If the current node we're looking at is an instance of the "Card" class
+        if(parent instanceof Card){
+          found = true;
+        } else {
+          parent = parent.parentNode;
+        }
+      }
+      cardMap[this.__unique] = (found) ?
+          parent :
+          null;
+
       componentMap[this.__id].onReady();
     }
 
@@ -219,17 +245,6 @@ function scopedCustomElement (cardComponent, id){
       this.prepend(temp.children[0].cloneNode(true));
     }
 
-    /**
-     * Search the component's custom element for a particular node using standard selector.
-     *
-     * @param {string} node
-     * @return {NodeList}
-     *
-     * @todo Do we need this? Can't we access querySelectorAll from this element?
-     */
-    query(node){
-      return super.querySelectorAll(node);
-    }
   };
 
 }
