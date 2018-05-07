@@ -1,61 +1,6 @@
 import {_debounce} from '../utilities/_debounce.js';
 import {Part} from './Part.js';
-
-/**
- * @todo Cleanup
- * @todo Improve input generation to handle more types and attributes.
- */
-
-/**
- * Get a callback which is prepared to update a component property from the input keyup event.
- *    The callback is debounced to reduce redundant updates.
- *
- * @param {string} property
- * @param {CardComponent} component
- * @param {*} defaultValue Must be a valid value for the input to use.
- * @returns {Function} The debounce reference.  Each event request refreshes the debounce timeout.
- */
-const propChangeDebounce = function(property, component){
-  let cb = (e)=>{
-    // If the incoming value is empty, use the default value instead.
-    component.setAttribute(property, e.target.value);
-  };
-  return _debounce(cb, 100);
-};
-
-/**
- * Optional Attributes for different input types.
- *
- *  Used to limit which attributes are copied from the PropertyInput instance and the child input element.
- *
- * @type {{number: [string,string,string], date: Array, textarea: [string,string], default: [string]}}
- */
-const validAtts = {
-  'number':["step", "max", "min"],
-  'date': [],
-  'textarea': ['rows', 'cols'],
-  'default': ['length']
-};
-
-/**
- * Apply attributes to an input using the validAttributes constant as a guide.
- * @param input {HTMLElement}
- * @param attributes {NamedNodeMap}
- */
-const applyAtts = function(input, attributes){
-  const type = attributes.type.value;
-  // Get the list of attributes which can be passed from the Property-Input element down to the actual input.
-  const validAttributes = (validAtts.hasOwnProperty(type)) ?
-      validAtts[type] :
-      validAtts['default'];
-
-  // Apply any attributes which are valid for the type of input being mutated.
-  for(let att of attributes){
-    if(validAttributes.includes(att)){
-      input.setAttribute(att, attributes[att]);
-    }
-  }
-};
+import {Observation} from '../utilities/Observation.js';
 
 /**
  * PropertyInput Class
@@ -67,45 +12,112 @@ const applyAtts = function(input, attributes){
  *
  * The Component used is the first reachable card-component parent of the PropertyInput.
  *
+ * To listen to change events, add a Property-Observer to the component.
+ * As the changes from this input are either causing or responding to the change of a component's property,
+ *    it would be redundant to use change events here.
+ *
  * @extends {Part}
  */
 export class PropertyInput extends Part {
-
   get value(){
     return this.input.value;
+  }
+
+  constructor(){
+    super();
+    this.input = undefined;
+  }
+
+  /**
+   * Create an input and copy over relevant attributes
+   * @return {Element}
+   */
+  createInput(){
+    let input = document.createElement("input");
+    input.setAttribute("type", "text");
+    this.appendChild(input);
+    return input;
+  }
+
+  findInput(){
+    let selector;
+    /**
+     * If there's an input attribute, use it's value as a selector on this elements children to find the input.
+     */
+    if(this.attributes.input){
+      selector = this.attributes.input.value;
+    } else {
+      /**
+       * No target input provided, look for one.
+       */
+      selector = "input, textarea";
+    }
+
+    let nodes = this.querySelectorAll(selector);
+    if(nodes.length === 0){
+      throw "No input elements found in property input's HTML";
+    }
+
+    if(nodes.length > 1){
+      throw "Too many input element's found in property input's HTML. Use input attribute to provide a selector to use.";
+    }
+
+    return nodes[0];
+  }
+
+  /**
+   * Get a callback which is prepared to update a component property from the input keyup event.
+   *    The callback is debounced to reduce redundant updates.
+   *
+   * @returns {Function} The debounce reference.  Each event request refreshes the debounce timeout.
+   */
+  propChangeDebounce(){
+    let component = this.parentComponent();
+    let property = this.attributes.property.value;
+    let cb = (e)=>{
+      // If the incoming value is empty, use the default value instead.
+      component.setAttribute(property, e.target.value);
+    };
+    return _debounce(cb, 100);
   }
 
   /**
    * Only called when the element is appended to the dom.
    *
-   * Builds the Input element and appends it to the PropertyInput element.
+   * Associates a callback to an input,
+   *  either one created by this element or one provided by the innerhtml of this element,
+   *  which updates a property on a component with the new provided value.
+   *
+   *  There *must* be an input (or textarea) provided if there's inner content.
    */
   render(){
-    // If the input type isn't an input element, use the right one.
-    let input;
-    if(this.attributes.type.value === "textarea") {
-      input = document.createElement("textarea");
-    } else {
-      input = document.createElement("input");
-      input.setAttribute("type", this.attributes.type.value);
-    }
-
-    // Apply valid attributes from this component onto the 'input' element.
-    applyAtts(input, this.attributes);
+    let input = (this.innerHTML.trim() === '') ?
+        this.createInput() :
+        this.findInput();
 
     // The parentComponent is the dom node for the parent component's custom element.
     const component = this.parentComponent();
-    const property = this.dataset.property;
+    const property = this.attributes.property.value;
+
 
     // Update the component property When the user releases a key from their keyboard while the input is focused.
-    input.addEventListener("keyup", propChangeDebounce(property, component));
+    input.addEventListener("keyup", this.propChangeDebounce());
+
+    // Apply the onchange event handler to capture when the value has changed through other means.
+    input.addEventListener("change", this.propChangeDebounce());
 
     input.value = component.getAttribute(property);
 
-    this.input = input;
+    // Watch the parent component element's property/attributes so that if it change's by an external force, the input updates its value.
+    let observation = new Observation();
+    observation.onAttributeChange(property, (val)=>{
+      if(val !== input.value){
+        input.value = val;
+      }
+    });
+    observation.observe(component);
 
-    // Add the 'input' to the dom.
-    this.appendChild(this.input);
+    this.input = input;
 
   }
 }
