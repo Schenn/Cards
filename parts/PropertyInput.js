@@ -45,7 +45,7 @@ export class PropertyInput extends Part {
      * If there's an input attribute, use it's value as a selector on this elements children to find the input.
      */
     if(this.attributes.input){
-      selector = this.attributes.input.value;
+      selector = this.getAttribute("input");
     } else {
       /**
        * No target input provided, look for one.
@@ -73,7 +73,7 @@ export class PropertyInput extends Part {
    */
   propChangeDebounce(){
     let component = this.parentComponent();
-    let property = this.attributes.property.value;
+    let property = this.getAttribute("property");
     let cb = (e)=>{
       // If the incoming value is empty, use the default value instead.
       component.setAttribute(property, e.target.value);
