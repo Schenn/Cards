@@ -236,4 +236,8 @@ export class Observation {
     }
   }
 
+  disconnect(){
+    observations[this.__id].disconnect();
+  }
+
 }
