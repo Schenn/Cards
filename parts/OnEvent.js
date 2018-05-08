@@ -1,4 +1,7 @@
 import {ScriptPart} from './ScriptPart.js';
+import {_debounce} from '../utilities/_debounce';
+
+let delay = 100;
 
 /**
  * Trigger JS in response to an event on this element's parent node.
@@ -26,10 +29,13 @@ export class OnEvent extends ScriptPart {
     super.connectedCallback();
     let events = this.getAttribute("on").split(" ");
 
+    let self = this;
+    this.cb = _debounce((e)=>{
+      self.execute(e);
+    }, delay);
+
     events.forEach((event)=>{
-      this.parentNode.addEventListener(event, (e)=>{
-        this.execute(e);
-      });
+      this.parentNode.addEventListener(event, this.cb);
     });
   }
 
@@ -39,9 +45,7 @@ export class OnEvent extends ScriptPart {
   disconnectedCallback(){
     let events = this.getAttribute("on").split(" ");
     events.forEach((event)=>{
-      this.parentNode.removeEventListener(event, (e)=>{
-        this.execute(e);
-      });
+      this.parentNode.removeEventListener(event, this.cb);
     });
   }
 }
