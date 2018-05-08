@@ -102,6 +102,10 @@ function scopedCustomElement (cardComponent, id){
    *
    *  @todo Add a Messaging System
    *  @todo Add ability to take in alternative Component Template from the existing innerHTML of the custom element when it's created.
+   *  @todo Find out if there's a way to do this without replacing the setter on the component.  We could use a proxy, but would that capture the set property events that the subsequent method calls may trigger?
+   *        We could consume the properties and methods of the component into a new object. That object's property setters would do the work of ensuring the attributes are set, but then detecting the types of the components would be broken.
+   *
+   *
    */
   return class CustomElement extends HTMLElement {
     constructor(){
