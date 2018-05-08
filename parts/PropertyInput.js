@@ -3,6 +3,13 @@ import {Part} from './Part.js';
 import {Observation} from '../utilities/Observation.js';
 
 /**
+ * How long to delay the debouncer.
+ *
+ * @return {number}
+ */
+let delay = 100;
+
+/**
  * PropertyInput Class
  *
  * Creates an input(ish) element for the assigned component property.
@@ -19,6 +26,7 @@ import {Observation} from '../utilities/Observation.js';
  * @extends {Part}
  */
 export class PropertyInput extends Part {
+
   get value(){
     return this.input.value;
   }
@@ -78,7 +86,7 @@ export class PropertyInput extends Part {
       // If the incoming value is empty, use the default value instead.
       component.setAttribute(property, e.target.value);
     };
-    return _debounce(cb, 100);
+    return _debounce(cb, delay);
   }
 
   /**
@@ -97,7 +105,7 @@ export class PropertyInput extends Part {
 
     // The parentComponent is the dom node for the parent component's custom element.
     const component = this.parentComponent();
-    const property = this.attributes.property.value;
+    const property = this.getAttribute("property");
 
 
     // Update the component property When the user releases a key from their keyboard while the input is focused.
