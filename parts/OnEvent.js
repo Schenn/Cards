@@ -1,5 +1,5 @@
 import {ScriptPart} from './ScriptPart.js';
-import {_debounce} from '../utilities/_debounce';
+import {_debounce} from '../utilities/_debounce.js';
 
 let delay = 100;
 
