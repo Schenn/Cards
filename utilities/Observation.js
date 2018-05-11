@@ -2,7 +2,6 @@
  * @todo Observation Collections below should be weakmaps to automatically free memory and invalid references.
  * @todo Cleanup
  */
-
 /**
  * MutationObservers in memory
  * @type {{}}
@@ -26,6 +25,8 @@ let callbacks = {};
  * @type {number}
  */
 let uniqueObservationId = 0;
+
+
 
 /**
  * An Observation prepares a Mutation Observer's initializing options and connects
@@ -57,6 +58,52 @@ export class Observation {
    */
   get options(){
     return observationOptions[this.__id];
+  }
+
+  get textOptions(){
+    let textOpts = {};
+
+    textOpts.characterData = true;
+    // Use a false option for this value creates a hiccup. It should either be true or absent.
+    if(observationOptions[this.__id].characterDataOldValue){
+      textOpts.characterDataOldValue = observationOptions[this.__id].characterDataOldValue;
+    }
+
+    // Firefox will not track the character data changes on the text node itself.
+    // Instead, you need to listen for childList changes in addition to characterdata changes.
+    // Then in the observation callback, intelligently decide if its a child list mutation or text mutation.
+    // CharacterData callbacks in FF REQUIRE the data attribute of the text node to be set directly.
+
+    // Chrome DOES use the CharacterData mutation if the innerText of the node changes and the observed element is the text node.
+
+    // For best functionality, we have to listen to the whole subtree due to the many ways that the DOM changes
+    //    text without triggering the setter.
+    // This means you cannot listen for text changes on a parent and child separately unless you take great care to replace text content in a specific way.
+    //      (Always using the textNode.data setter)
+
+    //textOpts.subtree = true;
+
+    return textOpts;
+  }
+
+  get nodeOptions(){
+    let nodeOpts = {};
+    if(observationOptions[this.__id].subtree){
+      nodeOpts.subtree = true;
+    }
+    if(observationOptions[this.__id].attributes){
+      nodeOpts.attributes = true;
+      // Use a false option for this value creates a hiccup. It should either be true or absent.
+      if(observationOptions[this.__id].attributeOldValue) {
+        nodeOpts.attributeOldValue = observationOptions[this.__id].attributeOldValue;
+      }
+
+      nodeOpts.attributeFilter = observationOptions[this.__id].attributeFilter;
+    }
+    if(observationOptions[this.__id].childList){
+      nodeOpts.childList = true;
+    }
+    return nodeOpts;
   }
 
   /**
@@ -138,45 +185,24 @@ export class Observation {
    * @todo Use spread to clean this up.
    */
   observe(node){
-    let textOpts = {};
-    let nodeOpts = {};
 
     // If the MutationObserver should watch the text node of the target...
     // Character Data Mutation Observation only works on the data value from the text node.
-    if(observationOptions[this.__id].characterData) {
-      textOpts.characterData = true;
-      // Use a false option for this value creates a hiccup. It should either be true or absent.
-      if(observationOptions[this.__id].characterDataOldValue){
-        textOpts.characterDataOldValue = observationOptions[this.__id].characterDataOldValue;
-      }
+    // To trigger the mutation, you must use the data setters on the text node itself.
+    // If the observed node is NOT a text node, than it will automatically include all children of the element.
 
-      if(observationOptions[this.__id].subtree){
+    if(observationOptions[this.__id].characterData) {
+      let textOpts = this.textOptions;
+      if(node.nodeType !== Node.TEXT_NODE){
+        textOpts.childList = true;
         textOpts.subtree = true;
       }
-      // Observe the text data of the first (and presumably only) child of the node
-      // @todo Instead of assuming its the first and only child, find the first text node in the element contents.
-      observations[this.__id].observe(node.firstChild, textOpts);
+      observations[this.__id].observe(node, textOpts);
     }
 
     // If the Mutation Observer should watch the attributes or child list of the target.
     if(observationOptions[this.__id].attributes || observationOptions[this.__id].childList){
-      if(observationOptions[this.__id].subtree){
-        nodeOpts.subtree = true;
-      }
-      if(observationOptions[this.__id].attributes){
-        nodeOpts.attributes = true;
-        // Use a false option for this value creates a hiccup. It should either be true or absent.
-        if(observationOptions[this.__id].attributeOldValue) {
-          nodeOpts.attributeOldValue = observationOptions[this.__id].attributeOldValue;
-        }
-
-        nodeOpts.attributeFilter = observationOptions[this.__id].attributeFilter;
-      }
-      if(observationOptions[this.__id].childList){
-        nodeOpts.childList = true;
-      }
-
-      observations[this.__id].observe(node, nodeOpts);
+      observations[this.__id].observe(node, this.nodeOptions);
     }
   }
 
@@ -207,9 +233,19 @@ export class Observation {
 
   onTextMutation(mutation){
     if(typeof callbacks[this.__id].onTextChanged !== "undefined"){
-      let val = observationOptions[this.__id].characterDataOldValue ?
-          mutation.oldValue :
-          mutation.target.data;
+      let val;
+      if(mutation.type === "childList"){
+        val = observationOptions[this.__id].characterDataOldValue ?
+            mutation.removedNodes[0].data :
+            mutation.addedNodes[0].data;
+      } else if(mutation.type === "characterData") {
+        val = observationOptions[this.__id].characterDataOldValue ?
+            mutation.oldValue :
+            mutation.target.data;
+      } else {
+        console.log(mutation);
+        throw "Unknown Mutation Type";
+      }
       callbacks[this.__id].onTextChanged(val);
     }
   }
@@ -229,7 +265,11 @@ export class Observation {
         this.onAttributeMutation(mutation);
         // Else if a child was added or removed to the Node.
       } else if(mutation.type === "childList"){
-        this.onChildListMutation(mutation);
+        if(mutation.addedNodes.length > 0 && mutation.addedNodes[0].nodeType === Node.TEXT_NODE) {
+          this.onTextMutation(mutation);
+        } else {
+          this.onChildListMutation(mutation);
+        }
       } else if(mutation.type === "characterData") {
         this.onTextMutation(mutation);
       }
