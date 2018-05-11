@@ -46,7 +46,8 @@
  The Deck would use parts to control some of that communication with the playing card components.
  
  - Application will only work on Chrome by default as of - 3/6/18, however it can work in FF if a user enables a specific setting.
- - IE is in discussion still with Custom Elements, meaning it may be some time before they work with IE.
- - FF 59+ will not require the setting for the app to work.
- - Works in generic mobile browsers for some reason.
+    - dom.webcomponents.enabled and dom.webcomponents.customelements.enabled to true
+ - Edge is working on an implementation of Custom Elements still (5/11/18).
+ - FF 61+ will not require the setting for the app to work. (Scheduled for release 6/26/18)
+ - Opera, Opera Mobile, and Safari support autonomous custom elements, which is the type of elements CARDS uses.
  
