@@ -15,16 +15,14 @@ export class Cards {
   /**
    * Create a new instance of the Cards App
    *
-   * @param rootNode HTMLElement The element to limit the Cards App to
    * @param elementRegistry CustomElementRegistry The window Custom Element Registry to use.
    *      Note - I haven't tried this yet in an iframe, but I imagine that the custom elements are not shared with their parent frame,
    *        but may be shared downward from their parent frame.
    *
    * @param components array of components to use. If none are provided, the default collection is used instead.
    *
-   * @todo Remove the RootNode param.  Not needed anymore as HTML is what controls the creation of Cards and Components, not appending to a root node.
    */
-  constructor(rootNode, elementRegistry, components = []){
+  constructor(elementRegistry, components = []){
     let compsToRegister = (components.length === 0) ?
         standardComponents :
         components;
@@ -38,8 +36,6 @@ export class Cards {
     compsToRegister.forEach((comp)=>{
       this.registerComponent(comp, this.elementRegistry);
     });
-
-    this.root = rootNode;
   }
 
   /**
