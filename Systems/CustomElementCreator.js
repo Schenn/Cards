@@ -214,7 +214,7 @@ function scopedCustomElement (cardComponent, id){
           parent = parent.parentNode;
         }
       }
-      cardMap[this.__unique] = (found) ?
+      cardMap[this.__id] = (found) ?
           parent :
           null;
 
