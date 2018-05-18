@@ -107,9 +107,16 @@ export class Card extends HTMLElement {
 
   /**
    * Set the card's inner html content to it's template string.
+   *
+   * Won't do anything if the card's template is empty | null | undefined
    */
   render(){
-    this.innerHTML = this.template;
+    if(this.template.trim() !== '' &&
+        this.template !== null &&
+        typeof this.template !== 'undefined'
+    ){
+      this.innerHTML = this.template;
+    }
   }
 
   /**
