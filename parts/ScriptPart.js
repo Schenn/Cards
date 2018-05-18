@@ -14,6 +14,10 @@ let callbacks = new WeakMap();
  * @todo Use spread to fill out the arguments for the Function creation. Thus allowing any number of custom arguments instead of one.
  */
 export class ScriptPart extends Part {
+  static get tag(){
+    return 'script-part';
+  }
+
   constructor(){
     super();
     this.__unique = ++unique;

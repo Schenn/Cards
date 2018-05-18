@@ -1,11 +1,5 @@
 import {CardComponent} from './components/cards/CardComponent.js';
-
-// Default Components used by Cards.
-
-import {standardComponents} from "./components/standard.js";
-
-import {registerParts} from './parts/registerParts.js';
-
+import {partsList} from './parts/partsList.js';
 import {CustomElementCreator} from './Systems/CustomElementCreator.js';
 
 let components = {};
@@ -19,18 +13,15 @@ export class Cards {
    *      Note - I haven't tried this yet in an iframe, but I imagine that the custom elements are not shared with their parent frame,
    *        but may be shared downward from their parent frame.
    *
-   * @param components array of components to use. If none are provided, the default collection is used instead.
+   * @param compsToRegister array of components to use.
    *
    */
-  constructor(elementRegistry, components = []){
-    let compsToRegister = (components.length === 0) ?
-        standardComponents :
-        components;
+  constructor(elementRegistry, compsToRegister = []){
 
     this.elementRegistry = elementRegistry;
 
     // Register the Default Parts
-    registerParts(this.elementRegistry);
+    this.registerParts(partsList);
 
     // Register the default or any provided components.
     compsToRegister.forEach((comp)=>{
@@ -54,8 +45,7 @@ export class Cards {
       CustomElementCreator(module, this.elementRegistry);
     } else {
       console.log("Module was not card component.");
-      // Do something else with non-card components
-      // @todo Come up with some Non-Card Components?
+      console.log(module);
     }
 
   }
@@ -85,8 +75,14 @@ export class Cards {
    * @param {Card[]} cards
    */
   registerCards(cards=[]){
-    for(let card in cards){
+    for(let card of cards){
       this.registerCard(card);
+    }
+  }
+
+  registerParts(parts = []){
+    for(let part of parts){
+      this.elementRegistry.define(part.tag, part);
     }
   }
 

@@ -27,6 +27,10 @@ let delay = 100;
  */
 export class PropertyInput extends Part {
 
+  static get tag(){
+    return 'property-input';
+  }
+
   get value(){
     return this.input.value;
   }

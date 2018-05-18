@@ -10,6 +10,10 @@ let delay = 100;
  */
 export class OnEvent extends ScriptPart {
 
+  static get tag(){
+    return 'on-event';
+  }
+
   constructor(){
     super();
     this.setAttribute("argument", "event");

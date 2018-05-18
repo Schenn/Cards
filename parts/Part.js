@@ -23,6 +23,13 @@ export class Part extends HTMLElement {
   }
 
   /**
+   * @override
+   */
+  static get tag(){
+    throw "Tag Property for part requires an override.";
+  }
+
+  /**
    * Called when an attribute on the Part is changed.
    *
    * @param {string} name

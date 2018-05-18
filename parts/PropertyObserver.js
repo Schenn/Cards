@@ -21,6 +21,10 @@ let unique = 0;
  */
 export class PropertyObserver extends ScriptPart {
 
+  static get tag(){
+    return 'property-observer';
+  }
+
   constructor(){
     super();
     this.setAttribute("argument", "value");
