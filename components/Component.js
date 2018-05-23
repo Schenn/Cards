@@ -20,10 +20,8 @@ let ComponentMap = new WeakMap();
  *
  * But the Component stands alone.
  *
- * @abstract Component provides the promise that your code must adhere to in order to be used by the system.
- *
- * @todo Move the Custom Element / Rendering related functionality to CardComponent.  Generic Components should be more abstractable than that.
- */
+ * @abstract Component must be extended to be used.
+ **/
 export class Component {
   /**
    * @override This property MUST be overwritten
@@ -105,6 +103,16 @@ export class Component {
    */
   setAttribute(att, value){
     ComponentMap[`${this.constructor.tag}-${this.__unique}`].setAttribute(att, value);
+  }
+
+  /**
+   * Get all Parts of a given type.
+   *
+   * @param {string} type The Tag for the part to find.
+   * @return {NodeList}
+   */
+  getParts(type){
+    return this.querySelector("[slot='parts']").querySelectorAll(type);
   }
 
   /**

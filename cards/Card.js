@@ -126,7 +126,7 @@ export class Card extends HTMLElement {
    *  Check the components tag or unique id to determine which component it is.
    *  Or you can do an instanceof check if you don't need that level of specificity.
    *
-   * @param {CardComponent} component The component instance.
+   * @param {Component} component The component instance.
    * @abstract
    */
   onComponentReady(component){
@@ -138,7 +138,7 @@ export class Card extends HTMLElement {
    *  Check the components tag or unique id to determine which component it is.
    *  Or you can do an instanceof check if you don't need that level of specificity.
    *
-   * @param {CardComponent} component The Card Component Instance.
+   * @param {Component} component The Card Component Instance.
    * @abstract
    */
   onComponentRemoved(component){

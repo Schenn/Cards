@@ -1,5 +1,5 @@
 /**
- * Defines a custom element which can be created in html from a CardComponent module.
+ * Defines a custom element which can be created in html from a Component module.
  *
  * A CustomElement's attributes match a provided Card Component
  * A CustomElement's tag comes from the Card Component "tag" property
@@ -9,10 +9,10 @@
 
 import {Card} from '../cards/Card.js';
 
-function mergedElement(cardComponent, element){
-  let observables = cardComponent.observableProperties;
+function mergedElement(component, element){
+  let observables = component.observableProperties;
 
-  let instance = new cardComponent(element);
+  let instance = new component(element);
 
   /**
    *  In order to trigger render effects on the element for the particular component,
@@ -66,13 +66,13 @@ let cardMap = new WeakMap();
 /**
  * Define the unique particulars of a custom element using a related card component class as a guide.
  *
- * @param cardComponent CardComponent class
+ * @param component {Component} class
  * @param id
  * @returns {CustomElement}
  */
-function scopedCustomElement (cardComponent, id){
+function scopedCustomElement (component, id){
 
-  let observables = cardComponent.observableProperties;
+  let observables = component.observableProperties;
   let componentMap = {};
 
   /**
@@ -111,7 +111,7 @@ function scopedCustomElement (cardComponent, id){
     constructor(){
       super();
       this.__id = (this.hasAttribute("__id")) ? this.getAttribute("__id") : id;
-      componentMap[this.__id] = mergedElement(cardComponent, this);
+      componentMap[this.__id] = mergedElement(component, this);
 
       // Attach our shadow root and set the initial default slots.
       // @todo Find a way to provide alternative template here.
@@ -161,9 +161,9 @@ function scopedCustomElement (cardComponent, id){
     }
 
     /**
-     * Get the CardComponent Associated with this custom element.
+     * Get the Component Associated with this custom element.
      *
-     * @return {CardComponent}
+     * @return {Component}
      */
     getComponent(){
       return componentMap[this.__id];
@@ -256,13 +256,13 @@ function scopedCustomElement (cardComponent, id){
 /**
  * Create a custom element class from a card Component
  *
- * @param cardComponent CardComponent child class
+ * @param component {Component} child class
  * @param elementRegistry CustomElementRegistry from the dom or a polyfill.
  * @constructor
  */
-export function CustomElementCreator(cardComponent, elementRegistry){
+export function CustomElementCreator(component, elementRegistry){
   // Create a specially scoped Custom Element Class for the provided component.
-  let componentElementClass = scopedCustomElement(cardComponent, ++uniqueIds);
+  let componentElementClass = scopedCustomElement(component, ++uniqueIds);
   // Register the Custom Element under the Component's Tag property.
-  elementRegistry.define(cardComponent.tag, componentElementClass);
+  elementRegistry.define(component.tag, componentElementClass);
 }

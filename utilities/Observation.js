@@ -38,7 +38,7 @@ let uniqueObservationId = 0;
  * @todo Add an optional param to debounce the mutation callbacks.
  * @todo Add a child list change filter so that the callback is only triggered when the childlist passes the filter.
  *        -- onComponentReady seems like a good place for this. When a card hears the creation of a component it can apply a ChildListFilterComponent to the observer.
- *            -- onReady should be a definable attribute of any custom-element. Regardless if its a Card, CardComponent, or Part.
+ *            -- onReady should be a definable attribute of any custom-element. Regardless if its a Card, Component, or Part.
  * @todo Attribute "old" and "new" attributes should be observed independently so that some attribute callbacks can specify that they want the original value over the new.
  *
  */
@@ -137,7 +137,7 @@ export class Observation {
   /**
    * Add a callback to trigger if a child is added to the target.
    *
-   * Note - If the Child was a CardComponent, than it's onConnect and onDisconnect function will also be called which triggers a callback on its card parent.
+   * Note - If the Child was a Component, than it's onConnect and onDisconnect function will also be called which triggers a callback on its card parent.
    * You should NOT watch for children of Cards, but rather, children of components or normal dom nodes.
    *
    * @param {function} callback
@@ -150,7 +150,7 @@ export class Observation {
   /**
    * Add a callback to trigger if a child is removed from the target.
    *
-   * Note - If the Child was a CardComponent, than it's onConnect and onDisconnect function will also be called which triggers a callback on its card parent.
+   * Note - If the Child was a Component, than it's onConnect and onDisconnect function will also be called which triggers a callback on its card parent.
    * You should NOT watch for child changes for a whole card, but rather, the children of components or a set of normal dom nodes.
    *
    * @param {function} callback

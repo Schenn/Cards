@@ -1,4 +1,4 @@
-import {CardComponent} from './CardComponent.js';
+import {Component} from '../Component.js';
 
 class NavEvent extends CustomEvent {
   constructor(url){
@@ -6,7 +6,7 @@ class NavEvent extends CustomEvent {
   }
 }
 
-export class NavMap extends CardComponent {
+export class NavMap extends Component {
   static get tag(){
     return "nav-map";
   }

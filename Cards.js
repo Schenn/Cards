@@ -1,4 +1,4 @@
-import {CardComponent} from './components/cards/CardComponent.js';
+import {Component} from './components/Component.js';
 import {partsList} from './parts/partsList.js';
 import {CustomElementCreator} from './Systems/CustomElementCreator.js';
 
@@ -35,10 +35,9 @@ export class Cards {
    * @param {Component} module
    */
   registerComponent(module){
-    // If the component is a CardComponent
     console.log("Registering Components as Custom Elements.");
 
-    if(module.prototype instanceof CardComponent) {
+    if(module.prototype instanceof Component) {
       // Cache a reference to the module
       components[module.name] = module;
       // Create a Custom Element which uses the associated module to customize itself.
