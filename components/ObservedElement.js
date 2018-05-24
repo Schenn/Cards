@@ -92,7 +92,7 @@ export const ObservedElement = function(component){
      */
     connectedCallback(){
       this.children[0].setAttribute("slot", "parts");
-      this[this.__] = this.children;
+      this[this.__] = this.innerHTML;
       this.render();
       let connectedEvent = new CustomEvent("ComponentAdded", {
         detail: {
@@ -115,6 +115,9 @@ export const ObservedElement = function(component){
           parent = parent.parentNode;
         }
       }
+      if(found){
+        this.card = parent;
+      }
       this.component.onReady();
 
     }
@@ -122,7 +125,7 @@ export const ObservedElement = function(component){
     render(){
       this.innerHTML = this.component.template;
       this.children[0].setAttribute("slot", "content");
-      this.append(this[this.__]);
+      this.innerHTML += this[this.__];
     }
 
     /**

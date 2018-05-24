@@ -37,7 +37,7 @@ export class ScriptPart extends Part {
    * @return {boolean}
    */
   scriptReady(){
-    return typeof this[this._] !== "undefined";
+    return this[this._] !== null;
   }
 
   /**
