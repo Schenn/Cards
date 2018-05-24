@@ -1,3 +1,5 @@
+import {_debounce} from './_debounce';
+
 let uniqueObservationId = 0;
 
 /**
@@ -7,7 +9,6 @@ let uniqueObservationId = 0;
  *  Generic enough to be used on any element, but Cards primarily uses this in the PropertyObserver
  *      to watch for attribute changes on a component element.
  *
- * @todo Add an optional param to debounce the mutation callbacks.
  * @todo Add a child list change filter so that the callback is only triggered when the childlist passes the filter.
  *        -- onComponentReady seems like a good place for this. When a card hears the creation of a component it can apply a ChildListFilterComponent to the observer.
  *            -- onReady should be a definable attribute of any custom-element. Regardless if its a Card, Component, or Part.
@@ -21,7 +22,7 @@ export class Observation {
     this.__id = ++uniqueObservationId;
     this._ = Symbol(`Observation ${this.__id}`);
     this[this._] = {
-      observations: new MutationObserver((m)=>{this.onMutation(m);}),
+      observations: new MutationObserver(_debounce((m)=>{this.onMutation(m);}, 100)),
       options: {},
       callbacks: {}
     };
