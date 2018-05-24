@@ -1,32 +1,4 @@
-/**
- * @todo Observation Collections below should be weakmaps to automatically free memory and invalid references.
- * @todo Cleanup
- */
-/**
- * MutationObservers in memory
- * @type {{}}
- */
-let observations = {};
-
-/**
- * Option Objects for the Mutation Objects in memory or yet to be instanced.
- * @type {{}}
- */
-let observationOptions = {};
-
-/**
- * The related Callbacks to call when a MutationObserver is triggered.
- * @type {{}}
- */
-let callbacks = {};
-
-/**
- *
- * @type {number}
- */
 let uniqueObservationId = 0;
-
-
 
 /**
  * An Observation prepares a Mutation Observer's initializing options and connects
