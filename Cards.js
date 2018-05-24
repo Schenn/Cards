@@ -1,6 +1,5 @@
 import {Component} from './components/Component.js';
 import {partsList} from './parts/partsList.js';
-import {CustomElementCreator} from './Systems/CustomElementCreator.js';
 import {ObservedElement} from './Systems/ObservedElement.js';
 
 let components = {};
