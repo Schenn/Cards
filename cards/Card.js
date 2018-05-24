@@ -28,8 +28,7 @@
  *  Just understand that there isn't anything currently in the app that will provide a benefit to doing so.
  *
  * @abstract
- * @todo Re-render on template change.
- * @todo Slot an optional style element. Thus allowing the Card to manage the styles of its components as well as the above.
+ * @todo Slot an optional style element. Thus allowing the Card to manage the styles of its components
  */
 export class Card extends HTMLElement {
   /**

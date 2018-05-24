@@ -5,12 +5,6 @@
 let unique = 0;
 
 /**
- * Lookup for the Custom Element associated with the given Component
- * @type {WeakMap}
- */
-let ComponentMap = new WeakMap();
-
-/**
  * Components are base tools which a Cards application may use.
  * The Component Class provides the abstract and virtual methods which child classes should implement.
  *
@@ -38,7 +32,6 @@ export class Component {
    * @throws if not implemented
    */
   static get observableProperties(){
-    console.trace();
     throw "Property must be replaced by child class.";
   }
 
@@ -66,7 +59,8 @@ export class Component {
 
   constructor(element){
     // Abstract Check
-    ComponentMap[this.constructor.tag + `-${++unique}`] = element;
+    this._ = Symbol(`${this.constructor.tag}-${++unique}`);
+    this[this._] = element;
     if(new.target === Component){
       console.log("Throw an error! Cannot instantiate abstract class.");
     }
@@ -81,8 +75,7 @@ export class Component {
    * @returns {Proxy}
    */
   get element(){
-    let key = `${this.constructor.tag}-${this.__unique}`;
-    return ComponentMap[key];
+    return this[this._];
   }
 
   /**
@@ -92,7 +85,7 @@ export class Component {
    * @return {*|String|string}
    */
   getAttribute(att){
-    return ComponentMap[`${this.constructor.tag}-${this.__unique}`].getAttribute(att);
+    return this.element.getAttribute(att);
   }
 
   /**
@@ -102,7 +95,7 @@ export class Component {
    * @param {*} value
    */
   setAttribute(att, value){
-    ComponentMap[`${this.constructor.tag}-${this.__unique}`].setAttribute(att, value);
+    this.element.setAttribute(att, value);
   }
 
   /**

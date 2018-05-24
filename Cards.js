@@ -2,8 +2,6 @@ import {Component} from './components/Component.js';
 import {partsList} from './parts/partsList.js';
 import {ObservedElement} from './components/ObservedElement.js';
 
-let components = {};
-
 export class Cards {
 
   /**
@@ -37,8 +35,6 @@ export class Cards {
     console.log("Registering Components as Custom Elements.");
 
     if(module.prototype instanceof Component) {
-      // Cache a reference to the module
-      components[module.name] = module;
       // Create a Custom Element which uses the associated module to customize itself.
       this.elementRegistry.define(module.tag, ObservedElement(module));
     } else {

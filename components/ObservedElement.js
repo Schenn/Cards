@@ -51,8 +51,10 @@ export const ObservedElement = function(component){
       super();
       this._ = Symbol(component.name + idCounter++);
       this.__ = Symbol(component.name + 'parts' + idCounter);
+      // Component and Proxy Property
       this[this._] = componentProxy(this);
       // Attach our shadow root and set the initial default slots.
+      // Parts Cache Private Property
       this[this.__] = null;
       this.attachShadow({mode: 'open'});
       this.shadowRoot.innerHTML = `

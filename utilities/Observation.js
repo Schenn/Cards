@@ -47,9 +47,12 @@ export class Observation {
   constructor(){
     // Assign a unique ID to this observation and prepare the collections.
     this.__id = ++uniqueObservationId;
-    observations[this.__id] = new MutationObserver((m)=>{this.onMutation(m);});
-    observationOptions[this.__id] = {};
-    callbacks[this.__id] = {};
+    this._ = Symbol(`Observation ${this.__id}`);
+    this[this._] = {
+      observations: new MutationObserver((m)=>{this.onMutation(m);}),
+      options: {},
+      callbacks: {}
+    };
   }
 
   /**
@@ -57,7 +60,7 @@ export class Observation {
    * @return {*}
    */
   get options(){
-    return observationOptions[this.__id];
+    return this[this._].options;
   }
 
   get textOptions(){
@@ -65,8 +68,8 @@ export class Observation {
 
     textOpts.characterData = true;
     // Use a false option for this value creates a hiccup. It should either be true or absent.
-    if(observationOptions[this.__id].characterDataOldValue){
-      textOpts.characterDataOldValue = observationOptions[this.__id].characterDataOldValue;
+    if(this.options.characterDataOldValue){
+      textOpts.characterDataOldValue = this.options.characterDataOldValue;
     }
 
     // Firefox will not track the character data changes on the text node itself.
@@ -88,19 +91,19 @@ export class Observation {
 
   get nodeOptions(){
     let nodeOpts = {};
-    if(observationOptions[this.__id].subtree){
+    if(this.options.subtree){
       nodeOpts.subtree = true;
     }
-    if(observationOptions[this.__id].attributes){
+    if(this.options.attributes){
       nodeOpts.attributes = true;
       // Use a false option for this value creates a hiccup. It should either be true or absent.
-      if(observationOptions[this.__id].attributeOldValue) {
-        nodeOpts.attributeOldValue = observationOptions[this.__id].attributeOldValue;
+      if(this.options.attributeOldValue) {
+        nodeOpts.attributeOldValue = this.options.attributeOldValue;
       }
 
-      nodeOpts.attributeFilter = observationOptions[this.__id].attributeFilter;
+      nodeOpts.attributeFilter = this.options.attributeFilter;
     }
-    if(observationOptions[this.__id].childList){
+    if(this.options.childList){
       nodeOpts.childList = true;
     }
     return nodeOpts;
@@ -111,7 +114,7 @@ export class Observation {
    *  in addition to the target itself.
    */
   includeChildren(){
-    observationOptions[this.__id].subtree = true;
+    this.options.subtree = true;
   }
 
   /**
@@ -125,13 +128,13 @@ export class Observation {
    * @param {boolean} useOriginal Whether or not to use the values from before the change event or after.
    */
   onAttributeChange(att, callback, useOriginal = false){
-    if(typeof observationOptions[this.__id].attributes === "undefined"){
-      observationOptions[this.__id].attributes = true;
-      observationOptions[this.__id].attributeFilter = [];
+    if(typeof this.options.attributes === "undefined"){
+      this.options.attributes = true;
+      this.options.attributeFilter = [];
     }
-    observationOptions[this.__id].attributeOldValue = useOriginal;
-    observationOptions[this.__id].attributeFilter.push(att);
-    callbacks[this.__id][att] = callback;
+    this.options.attributeOldValue = useOriginal;
+    this.options.attributeFilter.push(att);
+    this[this._].callbacks[att] = callback;
   }
 
   /**
@@ -143,8 +146,8 @@ export class Observation {
    * @param {function} callback
    */
   onChildAdded(callback){
-    observationOptions[this.__id].childList = true;
-    callbacks[this.__id].onChildAdded = callback;
+    this.options.childList = true;
+    this[this._].callbacks.onChildAdded = callback;
   }
 
   /**
@@ -156,8 +159,8 @@ export class Observation {
    * @param {function} callback
    */
   onChildRemoved(callback){
-    observationOptions[this.__id].childList = true;
-    callbacks[this.__id].onChildRemoved = callback;
+    this.options.childList = true;
+    this[this._].callbacks.onChildRemoved = callback;
   }
 
   /**
@@ -170,10 +173,10 @@ export class Observation {
    * @param {boolean} useOriginal Whether or not to pass the original text content when the text is changed.
    */
   onTextChanged(callback, useOriginal = false){
-    observationOptions[this.__id].characterData = true;
-    observationOptions[this.__id].characterDataOldValue = useOriginal;
+    this.options.characterData = true;
+    this.options.characterDataOldValue = useOriginal;
 
-    callbacks[this.__id].onTextChanged = callback;
+    this[this._].callbacks.onTextChanged = callback;
   }
 
   /**
@@ -191,62 +194,62 @@ export class Observation {
     // To trigger the mutation, you must use the data setters on the text node itself.
     // If the observed node is NOT a text node, than it will automatically include all children of the element.
 
-    if(observationOptions[this.__id].characterData) {
+    if(this.options.characterData) {
       let textOpts = this.textOptions;
       if(node.nodeType !== Node.TEXT_NODE){
         textOpts.childList = true;
         textOpts.subtree = true;
       }
-      observations[this.__id].observe(node, textOpts);
+      this[this._].observations.observe(node, textOpts);
     }
 
     // If the Mutation Observer should watch the attributes or child list of the target.
-    if(observationOptions[this.__id].attributes || observationOptions[this.__id].childList){
-      observations[this.__id].observe(node, this.nodeOptions);
+    if(this.options.attributes || this.options.childList){
+      this[this._].observations.observe(node, this.nodeOptions);
     }
   }
 
   onAttributeMutation(mutation){
     let att = mutation.attributeName;
     // If there's a callback to trigger for this attribute mutation.
-    if(typeof callbacks[this.__id][att] !== "undefined"){
-      let val = observationOptions[this.__id].attributeOldValue ?
+    if(typeof this[this._].callbacks[att] !== "undefined"){
+      let val = this.options.attributeOldValue ?
           mutation.oldValue :
           mutation.target.getAttribute(att);
 
-      callbacks[this.__id][att](val);
+      this[this._].callbacks[att](val);
     }
   }
 
   onChildListMutation(mutation){
     // If a child was added to the node
-    if(typeof callbacks[this.__id].onChildAdded !== "undefined" &&
+    if(typeof this[this._].callbacks.onChildAdded !== "undefined" &&
         mutation.addedNodes.length > 0){
-      callbacks[this.__id].onChildAdded(mutation.addedNodes);
+      this[this._].callbacks.onChildAdded(mutation.addedNodes);
     }
     // If a child was removed from the node.
-    if(typeof callbacks[this.__id].onChildRemoved !== "undefined" &&
+    if(typeof this[this._].callbacks.onChildRemoved !== "undefined" &&
         mutation.removedNodes.length > 0){
-      callbacks[this.__id].onChildRemoved(mutation.removedNodes);
+      this[this._].callbacks.onChildRemoved(mutation.removedNodes);
     }
   }
 
   onTextMutation(mutation){
-    if(typeof callbacks[this.__id].onTextChanged !== "undefined"){
+    if(typeof this[this._].callbacks.onTextChanged !== "undefined"){
       let val;
       if(mutation.type === "childList"){
-        val = observationOptions[this.__id].characterDataOldValue ?
+        val = this.options.characterDataOldValue ?
             mutation.removedNodes[0].data :
             mutation.addedNodes[0].data;
       } else if(mutation.type === "characterData") {
-        val = observationOptions[this.__id].characterDataOldValue ?
+        val = this.options.characterDataOldValue ?
             mutation.oldValue :
             mutation.target.data;
       } else {
         console.log(mutation);
         throw "Unknown Mutation Type";
       }
-      callbacks[this.__id].onTextChanged(val);
+      this[this._].callbacks.onTextChanged(val);
     }
   }
 
@@ -277,7 +280,7 @@ export class Observation {
   }
 
   disconnect(){
-    observations[this.__id].disconnect();
+    this[this._].observations.disconnect();
   }
 
 }
