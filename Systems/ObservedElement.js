@@ -20,14 +20,14 @@ export const ObservedElement = function(component){
   let observables = component.observableProperties;
 
   const componentProxy = function(customElement){
-    let comp = new component(this);
+    let comp = new component(customElement);
     return {
       proxy: new Proxy(comp, {
         set: (comp, prop, value) => {
           // Don't infinite loop through setters.
           if (comp.hasOwnProperty(prop) && comp[prop] !== value) {
             comp[prop] = value;
-            if (observables.contains(prop)) {
+            if (observables.includes(prop)) {
               customElement.setAttribute(prop, value);
             }
           }
@@ -41,7 +41,7 @@ export const ObservedElement = function(component){
 
     /**
      * Get the list of Observable Attributes for the Component.
-     * @return {string[]|array}
+     * @return {string[]}
      */
     static get observedAttributes() {
       return observables;
@@ -49,12 +49,11 @@ export const ObservedElement = function(component){
 
     constructor(){
       super();
-      this.__id = idCounter++;
-      let compSymbol = Symbol(component.constructor.name + this.__id);
-      let partsCache = Symbol(component.constructor.name + 'parts' + this.__id);
-      this[compSymbol] = componentProxy(this);
+      this._ = Symbol(component.name + idCounter++);
+      this.__ = Symbol(component.name + 'parts' + idCounter);
+      this[this._] = componentProxy(this);
       // Attach our shadow root and set the initial default slots.
-      this[partsCache] = null;
+      this[this.__] = null;
       this.attachShadow({mode: 'open'});
       this.shadowRoot.innerHTML = `
             <slot name="content"></slot>
@@ -63,8 +62,7 @@ export const ObservedElement = function(component){
     }
 
     get component(){
-      let compSymbol = Symbol.for(component.constructor.name + this.__id);
-      return this[compSymbol].proxy;
+      return this[this._].proxy;
     }
 
 
@@ -78,10 +76,9 @@ export const ObservedElement = function(component){
      * @param {*} current
      */
     attributeChangedCallback(name, old, current){
-      let compSymbol = Symbol.for(component.constructor.name + this.__id);
-      if(observables.contains(name) && this[compSymbol].component[name] !== current) {
+      if(observables.includes(name) && this[this._].component[name] !== current) {
         // Sets the change on the actual component itself, not the proxy. This prevents change callback loops.
-        this[compSymbol].component[name] = current;
+        this[this._].component[name] = current;
         this.render();
       }
     }
@@ -93,8 +90,7 @@ export const ObservedElement = function(component){
      */
     connectedCallback(){
       this.children[0].setAttribute("slot", "parts");
-      let partsCache = Symbol.for(component.constructor.name + 'parts' + this.__id);
-      this[partsCache] = this.children;
+      this[this.__] = this.children;
       this.render();
       let connectedEvent = new CustomEvent("ComponentAdded", {
         detail: {
@@ -124,8 +120,7 @@ export const ObservedElement = function(component){
     render(){
       this.innerHTML = this.component.template;
       this.children[0].setAttribute("slot", "content");
-      let partsCache = Symbol.for(component.constructor.name + 'parts' + this.__id);
-      this.append(this[partsCache]);
+      this.append(this[this.__]);
     }
 
     /**
