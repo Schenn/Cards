@@ -1,7 +1,6 @@
 import {Part} from './Part.js';
 
 let unique = 0;
-let callbacks = new WeakMap();
 
 /**
  * This class allows the developer to add context specific scoped javascript to the html on their page.
@@ -20,7 +19,8 @@ export class ScriptPart extends Part {
 
   constructor(){
     super();
-    this.__unique = ++unique;
+    this._ = Symbol(`ScriptPart${unique++}`);
+    this[this._] = null;
   }
 
   /**
@@ -28,7 +28,7 @@ export class ScriptPart extends Part {
    * @return {*}
    */
   get script(){
-    return callbacks[this.__unique];
+    return this[this._];
   }
 
   /**
@@ -37,7 +37,7 @@ export class ScriptPart extends Part {
    * @return {boolean}
    */
   scriptReady(){
-    return typeof callbacks[this.__unique] !== "undefined";
+    return typeof this[this._] !== "undefined";
   }
 
   /**
@@ -56,9 +56,9 @@ export class ScriptPart extends Part {
     let script = this.innerText;
     // If there's no custom argument to use, don't prepare the function to expect one.
     if(scriptArg === null){
-      callbacks[this.__unique] = Function("component", script);
+      this[this._] = Function("component", script);
     } else {
-      callbacks[this.__unique] = Function(scriptArg, "component", script);
+      this[this._] = Function(scriptArg, "component", script);
     }
 
     // Clear the innertext as it shouldn't actually render.

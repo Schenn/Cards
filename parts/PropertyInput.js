@@ -56,7 +56,7 @@ export class PropertyInput extends Part {
     /**
      * If there's an input attribute, use it's value as a selector on this elements children to find the input.
      */
-    if(this.attributes.input){
+    if(this.getAttribute('input')){
       selector = this.getAttribute("input");
     } else {
       /**

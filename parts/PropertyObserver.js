@@ -1,12 +1,6 @@
 import {Observation} from '../utilities/Observation.js';
 import {ScriptPart} from './ScriptPart.js';
 
-/**
- * Memoize the callbacks to prevent observers from having their scripts changed after their first creation.
- * @type {WeakMap}
- */
-let observers = new WeakMap();
-
 let unique = 0;
 
 /**
@@ -28,6 +22,10 @@ export class PropertyObserver extends ScriptPart {
   constructor(){
     super();
     this.setAttribute("argument", "value");
+    this._ = Symbol(`PropertyObserver${unique++}`);
+    this[this._] = {
+      observers: null
+    };
   }
 
   /**
@@ -47,16 +45,16 @@ export class PropertyObserver extends ScriptPart {
     // REQUIRED
     let property = this.getAttribute("property");
     // Trigger the callback on attribute change.
-    observers[this.__unique] = new Observation();
-    observers[this.__unique].onAttributeChange(property, (val)=>{
+    this[this._].observers = new Observation();
+    this[this._].observers.onAttributeChange(property, (val)=>{
       // Bind the callback function to the parent card before calling.
       this.execute(val);
     });
-    observers[this.__unique].observe(comp);
+    this[this._].observers.observe(comp);
   }
 
   disconnectedCallback(){
-    observers[this.__unique].disconnect();
-    delete observers[this.__unique];
+    this[this._].observers.disconnect();
+    delete this[this._].observers;
   }
 }

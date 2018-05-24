@@ -14,8 +14,6 @@
  *
  * @see {PropertyInput} For details on how the Property Input Part works
  * @see {PropertyObserver} For details on how the Property Observer Part works.
- *
- * @todo - Give Part to have a "target" optional attribute.  Target specifies a selector to use for finding the parent component.
  */
 export class Part extends HTMLElement {
   constructor(){
