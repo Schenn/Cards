@@ -12,6 +12,8 @@
  */
 
 import {Card} from '../cards/Card.js';
+import {ComponentAddedEvent} from '../events/ComponentAddedEvent.js';
+import {ComponentRemovedEvent} from '../events/ComponentRemovedEvent.js';
 
 let idCounter = 0;
 
@@ -85,22 +87,7 @@ export const ObservedElement = function(component){
       }
     }
 
-    /**
-     * Triggered when this component's custom element is added to the DOM.
-     *
-     * Dispatches a Component Added event for the parent Card to pick up and do something with if needed.
-     */
-    connectedCallback(){
-      this.children[0].setAttribute("slot", "parts");
-      this[this.__] = this.innerHTML;
-      this.render();
-      let connectedEvent = new CustomEvent("ComponentAdded", {
-        detail: {
-          component: this.component,
-          __id: this.__id
-        }
-      });
-      this.parentNode.dispatchEvent(connectedEvent);
+    findCard(){
       let found = false;
       let parent = this.parentNode;
       while(!found ){
@@ -118,6 +105,21 @@ export const ObservedElement = function(component){
       if(found){
         this.card = parent;
       }
+    }
+
+    /**
+     * Triggered when this component's custom element is added to the DOM.
+     *
+     * Dispatches a Component Added event for the parent Card to pick up and do something with if needed.
+     *
+     * @todo: Check for default values and apply as appropriate.
+     */
+    connectedCallback(){
+      this.children[0].setAttribute("slot", "parts");
+      this[this.__] = this.innerHTML;
+      this.render();
+      this.parentNode.dispatchEvent(new ComponentAddedEvent(this.component));
+      this.findCard();
       this.component.onReady();
 
     }
@@ -134,13 +136,7 @@ export const ObservedElement = function(component){
      * Dispatches a Component Removed event for the parent card to pick up and do something with if needed.
      */
     disconnectedCallback(){
-      let removedEvent = new CustomEvent("ComponentRemoved", {
-        detail: {
-          component: this.getComponent(),
-          __id: this.__id
-        }
-      });
-      this.parentNode.dispatchEvent(removedEvent);
+      this.parentNode.dispatchEvent(new ComponentRemovedEvent(this.component));
       this.component.onRemoved();
     }
   }
