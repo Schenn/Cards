@@ -84,7 +84,7 @@ export class ScriptPart extends Part {
     let card = comp.card;
     let cb = this.script.bind(card);
     if(this.getAttribute("argument") !== null){
-      cb(argument, comp);
+      cb(argument, comp.component);
     } else {
       cb(comp);
     }
