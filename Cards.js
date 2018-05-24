@@ -1,6 +1,7 @@
 import {Component} from './components/Component.js';
 import {partsList} from './parts/partsList.js';
 import {CustomElementCreator} from './Systems/CustomElementCreator.js';
+import {ObservedElement} from './Systems/ObservedElement';
 
 let components = {};
 
@@ -41,7 +42,7 @@ export class Cards {
       // Cache a reference to the module
       components[module.name] = module;
       // Create a Custom Element which uses the associated module to customize itself.
-      CustomElementCreator(module, this.elementRegistry);
+      this.elementRegistry.define(module.tag, ObservedElement(module));
     } else {
       console.log("Module was not card component.");
       console.log(module);
