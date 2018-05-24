@@ -1,6 +1,6 @@
 import {Component} from './components/Component.js';
 import {partsList} from './parts/partsList.js';
-import {ObservedElement} from './Systems/ObservedElement.js';
+import {ObservedElement} from './components/ObservedElement.js';
 
 let components = {};
 
