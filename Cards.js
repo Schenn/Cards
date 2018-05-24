@@ -13,20 +13,19 @@ export class Cards {
    *      Note - I haven't tried this yet in an iframe, but I imagine that the custom elements are not shared with their parent frame,
    *        but may be shared downward from their parent frame.
    *
-   * @param compsToRegister array of components to use.
+   * @param {Component[]} compsToRegister array of components to use.
    *
+   * @param {Card[]} cardsToRegister Array of cards to use.
    */
-  constructor(elementRegistry, compsToRegister = []){
+  constructor(elementRegistry, compsToRegister = [], cardsToRegister = []){
 
     this.elementRegistry = elementRegistry;
 
     // Register the Default Parts
     this.registerParts(partsList);
 
-    // Register the default or any provided components.
-    compsToRegister.forEach((comp)=>{
-      this.registerComponent(comp, this.elementRegistry);
-    });
+    this.registerComponents(compsToRegister);
+    this.registerCards(cardsToRegister);
   }
 
   /**
@@ -79,6 +78,10 @@ export class Cards {
     }
   }
 
+  /**
+   * Register a collection of parts.
+   * @param parts
+   */
   registerParts(parts = []){
     for(let part of parts){
       this.elementRegistry.define(part.tag, part);
