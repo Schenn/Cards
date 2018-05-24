@@ -39,7 +39,7 @@ export class OnEvent extends ScriptPart {
     }, delay);
 
     events.forEach((event)=>{
-      this.parentNode.addEventListener(event, this.cb);
+      this.parentComponent().addEventListener(event, this.cb);
     });
   }
 
@@ -49,7 +49,7 @@ export class OnEvent extends ScriptPart {
   disconnectedCallback(){
     let events = this.getAttribute("on").split(" ");
     events.forEach((event)=>{
-      this.parentNode.removeEventListener(event, this.cb);
+      this.parentComponent().removeEventListener(event, this.cb);
     });
   }
 }
