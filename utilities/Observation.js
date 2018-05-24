@@ -1,4 +1,4 @@
-import {_debounce} from './_debounce';
+import {_debounce} from './_debounce.js';
 
 let uniqueObservationId = 0;
 
