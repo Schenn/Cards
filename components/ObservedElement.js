@@ -146,6 +146,26 @@ export const ObservedElement = function(component){
       this.parentNode.dispatchEvent(new ComponentRemovedEvent(this.component));
       this.component.onRemoved();
     }
+
+    /**
+     * Set the visibility attribute to visible.
+     *
+     * Uses the visibility attribute instead of style to avoid style clashes and
+     *  reduce potential conflicts with other scripts that adjust the style of the element at the same time.
+     */
+    show(){
+      this.setAttribute("visibility", "visible");
+    }
+
+    /**
+     * Set the visibility attribute to hidden. - Still affects layout but does not render.
+     *
+     * Uses the visibility attribute instead of style to avoid style clashes and
+     *  reduce potential conflicts with other scripts that adjust the style of the element at the same time.
+     */
+    hide(){
+      this.setAttribute("visibility", "hidden");
+    }
   }
 
   return CustomElement;
