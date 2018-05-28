@@ -19,6 +19,20 @@ export class OnEvent extends ScriptPart {
     this.setAttribute("argument", "event");
   }
 
+  get target(){
+    let target = this.getAttribute('target');
+    let targetNode = this.parentComponent();
+    if(target !== null){
+      if(target === 'parent'){
+        targetNode = this.parentNode;
+      } else {
+        targetNode = this.parentComponent().querySelector(target);
+      }
+    }
+
+    return targetNode;
+  }
+
   /**
    * On initial connection, memoize and function wrap the inner text for the script.
    *
@@ -32,6 +46,7 @@ export class OnEvent extends ScriptPart {
   connectedCallback(){
     super.connectedCallback();
     let events = this.getAttribute("on").split(" ");
+    let targetNode = this.target;
 
     let self = this;
     this.cb = _debounce((e)=>{
@@ -39,7 +54,7 @@ export class OnEvent extends ScriptPart {
     }, delay);
 
     events.forEach((event)=>{
-      this.parentComponent().addEventListener(event, this.cb);
+      targetNode.addEventListener(event, this.cb);
     });
   }
 
@@ -49,7 +64,7 @@ export class OnEvent extends ScriptPart {
   disconnectedCallback(){
     let events = this.getAttribute("on").split(" ");
     events.forEach((event)=>{
-      this.parentComponent().removeEventListener(event, this.cb);
+      this.target.removeEventListener(event, this.cb);
     });
   }
 }
