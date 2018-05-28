@@ -32,6 +32,7 @@ export const ObservedElement = function(component){
             if (observables.includes(prop)) {
               customElement.setAttribute(prop, value);
             }
+            return true;
           }
         }
       }),
@@ -115,8 +116,16 @@ export const ObservedElement = function(component){
      * @todo: Check for default values and apply as appropriate.
      */
     connectedCallback(){
-      this.children[0].setAttribute("slot", "parts");
-      this[this.__] = this.innerHTML;
+      let content = document.createElement("component-content");
+      let parts = document.createElement("component-parts");
+
+      parts.innerHTML = this.innerHTML;
+      this[this.__] = content;
+      this[this.__].innerHTML = this.component.template;
+
+      this.innerHTML = '';
+      this.append(content);
+      this.append(parts);
       this.render();
       this.parentNode.dispatchEvent(new ComponentAddedEvent(this.component));
       this.findCard();
@@ -125,9 +134,7 @@ export const ObservedElement = function(component){
     }
 
     render(){
-      this.innerHTML = this.component.template;
-      this.children[0].setAttribute("slot", "content");
-      this.innerHTML += this[this.__];
+      this[this.__].innerHTML = this.component.template;
     }
 
     /**

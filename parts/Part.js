@@ -65,13 +65,13 @@ export class Part extends HTMLElement {
   parentComponent(){
     let found = false;
     let parentComp = this.parentNode;
-    while(!found ){
+    while(!found && typeof parentComp !== 'undefined' && parentComp !== null ){
       // Don't go any further if we've somehow managed this. Stop the loop, the parent component is missing.
       if(parentComp.nodeName === "body"){
         break;
       }
       // If the current node we're looking at is not a custom node.
-      if(parentComp.nodeName.indexOf("-") === -1){
+      if(parentComp.nodeName.indexOf("-") === -1 || !parentComp.component){
         parentComp = parentComp.parentNode;
         continue;
       }

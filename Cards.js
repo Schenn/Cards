@@ -2,6 +2,18 @@ import {Component} from './components/Component.js';
 import {partsList} from './parts/partsList.js';
 import {ObservedElement} from './components/ObservedElement.js';
 
+class ComponentContent extends HTMLElement{
+  connectedCallback(){
+    this.setAttribute("slot", "content");
+  }
+}
+
+class ComponentParts extends HTMLElement{
+  connectedCallback(){
+    this.setAttribute("slot", "parts");
+  }
+}
+
 export class Cards {
 
   /**
@@ -21,6 +33,9 @@ export class Cards {
 
     // Register the Default Parts
     this.registerParts(partsList);
+
+    this.elementRegistry.define("component-content", ComponentContent);
+    this.elementRegistry.define("component-parts", ComponentParts);
 
     this.registerComponents(compsToRegister);
     this.registerCards(cardsToRegister);
