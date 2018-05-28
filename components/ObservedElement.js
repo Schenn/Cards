@@ -32,8 +32,8 @@ export const ObservedElement = function(component){
             if (observables.includes(prop)) {
               customElement.setAttribute(prop, value);
             }
-            return true;
           }
+          return true;
         }
       }),
       component: comp

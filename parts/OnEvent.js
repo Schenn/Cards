@@ -23,11 +23,9 @@ export class OnEvent extends ScriptPart {
     let target = this.getAttribute('target');
     let targetNode = this.parentComponent();
     if(target !== null){
-      if(target === 'parent'){
-        targetNode = this.parentNode;
-      } else {
-        targetNode = this.parentComponent().querySelector(target);
-      }
+      targetNode = (target === 'parent') ?
+          this.parentNode :
+          this.parentNode.querySelector(target);
     }
 
     return targetNode;

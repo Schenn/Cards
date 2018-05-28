@@ -15,6 +15,8 @@
  * @see {PropertyInput} For details on how the Property Input Part works
  * @see {PropertyObserver} For details on how the Property Observer Part works.
  */
+import {Card} from '../cards/Card.js';
+
 export class Part extends HTMLElement {
   constructor(){
     super();
@@ -70,7 +72,7 @@ export class Part extends HTMLElement {
       if(parentComp.nodeName === "body"){
         break;
       }
-      // If the current node we're looking at is not a custom node.
+      // If the current node we're looking at is not a custom node / component wrapper.
       if(parentComp.nodeName.indexOf("-") === -1 || !parentComp.component){
         parentComp = parentComp.parentNode;
         continue;
@@ -80,6 +82,30 @@ export class Part extends HTMLElement {
       found = true;
     }
     return (found) ? parentComp : null;
+  }
+
+  parentCard(){
+    if(this.parentComponent()){
+      return this.parentComponent().card;
+    } else {
+      let found = false;
+      let parentComp = this.parentNode;
+      while(!found && typeof parentComp !== 'undefined' && parentComp !== null ){
+        // Don't go any further if we've somehow managed this. Stop the loop, the parent component is missing.
+        if(parentComp.nodeName === "body"){
+          break;
+        }
+        // If the current node we're looking at is not a Card
+        if(parentComp instanceof Card){
+          found = true;
+          break;
+        } else {
+          parentComp = parentComp.parentNode;
+        }
+
+      }
+      return (found) ? parentComp : null;
+    }
   }
 
   /**

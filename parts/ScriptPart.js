@@ -81,12 +81,18 @@ export class ScriptPart extends Part {
    */
   execute(argument){
     let comp = this.parentComponent();
-    let card = comp.card;
+    let componentObject = (comp) ?
+        comp.component :
+        null;
+    let card = (comp) ?
+        comp.card :
+        this.parentCard();
+
     let cb = this.script.bind(card);
     if(this.getAttribute("argument") !== null){
-      cb(argument, comp.component);
+      cb(argument, componentObject);
     } else {
-      cb(comp);
+      cb(componentObject);
     }
 
   }
