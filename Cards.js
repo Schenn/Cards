@@ -18,25 +18,26 @@ export class Cards {
 
   /**
    * Create a new instance of the Cards App
+   * @param {Component[]} compsToRegister array of components to use.*
+   * @param {Card[]} cardsToRegister Array of cards to use.
    *
-   * @param elementRegistry CustomElementRegistry The window Custom Element Registry to use.
+   * @param elementRegistry CustomElementRegistry A custom element registry such as window.customElements or a wrapper thereof.
    *      Note - I haven't tried this yet in an iframe, but I imagine that the custom elements are not shared with their parent frame,
    *        but may be shared downward from their parent frame.
    *
-   * @param {Component[]} compsToRegister array of components to use.
-   *
-   * @param {Card[]} cardsToRegister Array of cards to use.
    */
-  constructor(elementRegistry, compsToRegister = [], cardsToRegister = []){
+  constructor(compsToRegister = [], cardsToRegister = [], elementRegistry = null){
 
-    this.elementRegistry = elementRegistry;
+    this.elementRegistry = elementRegistry ? elementRegistry : window.customElements;
 
     // Register the Default Parts
+    if(!this.elementRegistry.get("component-content")){
+      this.elementRegistry.define("component-content", ComponentContent);
+      this.elementRegistry.define("component-parts", ComponentParts);
+    }
+
+
     this.registerParts(partsList);
-
-    this.elementRegistry.define("component-content", ComponentContent);
-    this.elementRegistry.define("component-parts", ComponentParts);
-
     this.registerComponents(compsToRegister);
     this.registerCards(cardsToRegister);
   }
@@ -49,7 +50,7 @@ export class Cards {
   registerComponent(module){
     console.log("Registering Components as Custom Elements.");
 
-    if(module.prototype instanceof Component) {
+    if(module.prototype instanceof Component && !this.elementRegistry.get(module.tag)) {
       // Create a Custom Element which uses the associated module to customize itself.
       this.elementRegistry.define(module.tag, ObservedElement(module));
     } else {
@@ -64,7 +65,7 @@ export class Cards {
    * @param {Component[]} modules
    */
   registerComponents(modules=[]){
-    for(let module in modules){
+    for(let module of modules){
       this.registerComponent(module);
     }
   }
@@ -75,7 +76,9 @@ export class Cards {
    * @param {Card} card
    */
   registerCard(card) {
-    this.elementRegistry.define(card.tag, card);
+    if(!this.elementRegistry.get(card.tag)){
+      this.elementRegistry.define(card.tag, card);
+    }
   }
 
   /**
@@ -95,7 +98,9 @@ export class Cards {
    */
   registerParts(parts = []){
     for(let part of parts){
-      this.elementRegistry.define(part.tag, part);
+      if(!this.elementRegistry.get(part.tag)) {
+        this.elementRegistry.define(part.tag, part);
+      }
     }
   }
 

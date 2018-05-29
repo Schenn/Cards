@@ -23,7 +23,7 @@ export class Component {
    * @throws if not implemented
    */
   static get tag(){
-    throw "Property must be replaced by child class.";
+    throw "Tag Property must be replaced by child class.";
   }
 
   /**
@@ -32,7 +32,7 @@ export class Component {
    * @throws if not implemented
    */
   static get observableProperties(){
-    throw "Property must be replaced by child class.";
+    throw "Observable Properties Getter must be replaced by child class.";
   }
 
   /**
