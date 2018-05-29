@@ -1,4 +1,17 @@
+/**
+ * All ajax connections should use the same 'current' ajax token.
+ *
+ * If you're using a csrf token, you need to return a new token value in your post responses.
+ *
+ * @type {string}
+ */
+
 let token = '';
+
+/**
+ * token ref is the key to use for managing the token value.  It should be set by the server.
+ * @type {string}
+ */
 let tokenRef = '';
 
 function prepareData(data){
@@ -28,7 +41,11 @@ export class AjaxConnection {
     prepareData(data);
     fetch(url, {
       method: 'POST',
+      cache: 'no-cache',
       credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(data),
     }).then(res => {
       res.json().then((json) => {
@@ -40,16 +57,22 @@ export class AjaxConnection {
     });
   }
 
-  get(url, data, onSuccess, onFailure) {
+  get(url, data, onSuccess, onFailure, text=false) {
     if(data){
       url += "?" + Object.entries(data).map(([key, val]) => `${key}=${val}`).join('&');
     }
-    fetch(url, {credentials: 'include'}).then((response)=>{
-      if(response.ok){
-        onSuccess(response);
-      } else {
+    let getPromise =fetch(url, {credentials: 'include'});
+    if(text){
+      getPromise.then((response) => {
+        return response.text();
+      }, (response)=>{
         onFailure(response);
-      }
+      });
+    }
+    getPromise.then((response)=>{
+      onSuccess(response);
+    }, (response)=>{
+      onFailure(response);
     })
   }
 
