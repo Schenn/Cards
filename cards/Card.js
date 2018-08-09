@@ -66,6 +66,7 @@ export class Card extends HTMLElement {
    * Sets up event listeners to grab component events.
    */
   connectedCallback(){
+    this.onConnected();
     this.addEventListener("ComponentReady", (component)=>{
       this.onComponentReady(component);
     }, {
@@ -141,6 +142,14 @@ export class Card extends HTMLElement {
    * @abstract
    */
   onComponentRemoved(component){
+
+  }
+
+  /**
+   * Called at the start of the connectedCallback method.
+   * Allows you to capture relevant data from innerhtml before the template is set.
+   */
+  onConnected(){
 
   }
 
