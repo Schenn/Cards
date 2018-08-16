@@ -35,6 +35,24 @@ export class PropertyInput extends Part {
     return this.input.value;
   }
 
+  set disabled(disable){
+    if(disable){
+      this.setAttribute("disabled", '');
+      if(this.input){
+        this.input.setAttribute("disabled", '');
+      }
+    } else {
+      this.removeAttribute("disabled");
+      if(this.input){
+        this.input.removeAttribute("disabled");
+      }
+    }
+  }
+
+  get disabled(){
+    return this.hasAttribute("disabled");
+  }
+
   constructor(){
     super();
     this.input = undefined;
@@ -130,6 +148,10 @@ export class PropertyInput extends Part {
     observation.observe(component);
 
     this.input = input;
+
+    if(this.disabled){
+      this.input.setAttribute("disabled", '');
+    }
 
   }
 }
