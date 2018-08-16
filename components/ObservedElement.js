@@ -53,12 +53,14 @@ export const ObservedElement = function(component){
     constructor(){
       super();
       this._ = Symbol(component.name + idCounter++);
-      this.__ = Symbol(component.name + 'parts' + idCounter);
+      this.__ = Symbol(component.name + 'content' + idCounter);
       // Component and Proxy Property
       this[this._] = componentProxy(this);
+
+      this[this.__] = document.createElement("component-content");
+
       // Attach our shadow root and set the initial default slots.
       // Parts Cache Private Property
-      this[this.__] = null;
       this.attachShadow({mode: 'open'});
       this.shadowRoot.innerHTML = `
             <slot name="content"></slot>
@@ -116,15 +118,14 @@ export const ObservedElement = function(component){
      * @todo: Check for default values and apply as appropriate.
      */
     connectedCallback(){
-      let content = document.createElement("component-content");
+
       let parts = document.createElement("component-parts");
 
       parts.innerHTML = this.innerHTML;
-      this[this.__] = content;
       this[this.__].innerHTML = this.component.template;
 
       this.innerHTML = '';
-      this.append(content);
+      this.append(this[this.__]);
       this.append(parts);
       this.render();
       this.parentNode.dispatchEvent(new ComponentAddedEvent(this.component));
