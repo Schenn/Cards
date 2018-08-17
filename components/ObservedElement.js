@@ -15,8 +15,6 @@ import {Card} from '../cards/Card.js';
 import {ComponentAddedEvent} from '../events/ComponentAddedEvent.js';
 import {ComponentRemovedEvent} from '../events/ComponentRemovedEvent.js';
 
-let idCounter = 0;
-
 export const ObservedElement = function(component){
 
   let observables = component.observableProperties;
@@ -52,27 +50,27 @@ export const ObservedElement = function(component){
 
     constructor(){
       super();
-      this._ = Symbol(component.name + idCounter++);
-      this.__ = Symbol(component.name + 'content' + idCounter);
-      // Component and Proxy Property
-      this[this._] = componentProxy(this);
+      this._ = Symbol(component.name);
 
-      this[this.__] = document.createElement("component-content");
+      this[this._] = {
+        component: componentProxy(this),
+        content: document.createElement("component-content")
+      };
 
       // Attach our shadow root and set the initial default slots.
       // Parts Cache Private Property
       this.attachShadow({mode: 'open'});
       this.shadowRoot.innerHTML = `
+            ${this.component.style}
             <slot name="content"></slot>
             <slot name="parts"></slot>
       `;
+
     }
 
     get component(){
-      return this[this._].proxy;
+      return this[this._].component.proxy;
     }
-
-
 
     /**
      * When a component's custom element's attribute is changed
@@ -85,7 +83,7 @@ export const ObservedElement = function(component){
     attributeChangedCallback(name, old, current){
       if(observables.includes(name) && this[this._].component[name] !== current) {
         // Sets the change on the actual component itself, not the proxy. This prevents change callback loops.
-        this[this._].component[name] = current;
+        this.component[name] = current;
         this.render();
       }
     }
@@ -119,13 +117,20 @@ export const ObservedElement = function(component){
      */
     connectedCallback(){
 
+      // If there's a template tag in the innerhtml, overwrite the components template
+      let template = this.querySelector("template");
+      if(template){
+        component.template = template;
+        this.removeChild(template);
+      }
+
       let parts = document.createElement("component-parts");
 
       parts.innerHTML = this.innerHTML;
-      this[this.__].innerHTML = this.component.template;
+      this[this._].content.innerHTML = this.component.template;
 
       this.innerHTML = '';
-      this.append(this[this.__]);
+      this.append(this[this._].content);
       this.append(parts);
       this.render();
       this.parentNode.dispatchEvent(new ComponentAddedEvent(this.component));
@@ -135,7 +140,7 @@ export const ObservedElement = function(component){
     }
 
     render(){
-      this[this.__].innerHTML = this.component.template;
+      this[this._].content.innerHTML = this.component.template;
     }
 
     /**

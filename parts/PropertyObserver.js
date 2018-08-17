@@ -22,10 +22,7 @@ export class PropertyObserver extends ScriptPart {
   constructor(){
     super();
     this.setAttribute("argument", "value");
-    this._ = Symbol(`PropertyObserver${unique++}`);
-    this[this._] = {
-      observers: null
-    };
+    this[this._].observers = null;
   }
 
   /**
@@ -40,10 +37,14 @@ export class PropertyObserver extends ScriptPart {
    *      not writing out complex functionality inside the element.
    */
   connectedCallback(){
+    let property = this.getAttribute("property");
+
+    this.setAttribute("argument", property);
+
     super.connectedCallback();
     let comp = this.parentComponent();
     // REQUIRED
-    let property = this.getAttribute("property");
+
     // Trigger the callback on attribute change.
     this[this._].observers = new Observation();
     this[this._].observers.onAttributeChange(property, (val)=>{

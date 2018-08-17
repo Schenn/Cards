@@ -44,6 +44,15 @@ export class Component {
   }
 
   /**
+   * Override this getter to provide this card's shadow dom with a style node.
+   *
+   * @return {string}
+   */
+  get style(){
+    return ``;
+  }
+
+  /**
    * @override Override this method to perform a task when the individual component is ready for use (after its first render).
    */
   onReady(){
@@ -59,14 +68,11 @@ export class Component {
 
   constructor(element){
     // Abstract Check
-    this._ = Symbol(`${this.constructor.tag}-${++unique}`);
-    this[this._] = element;
+    this._ = Symbol(`${this.constructor.tag}`);
+    this[this._] = {element: element};
     if(new.target === Component){
       console.log("Throw an error! Cannot instantiate abstract class.");
     }
-    // Initialize
-
-    this.__unique = unique;
   }
 
   /**
@@ -75,7 +81,7 @@ export class Component {
    * @returns {Proxy}
    */
   get element(){
-    return this[this._];
+    return this[this._].element;
   }
 
   /**
@@ -105,7 +111,7 @@ export class Component {
    * @return {NodeList}
    */
   getParts(type){
-    return this.querySelector("[slot='parts']").querySelectorAll(type);
+    return this.element.querySelector("[slot='parts']").querySelectorAll(type);
   }
 
   /**

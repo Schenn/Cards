@@ -19,8 +19,7 @@ export class ScriptPart extends Part {
 
   constructor(){
     super();
-    this._ = Symbol(`ScriptPart${unique++}`);
-    this[this._] = null;
+    this[this._].script = null;
   }
 
   /**
@@ -28,7 +27,7 @@ export class ScriptPart extends Part {
    * @return {*}
    */
   get script(){
-    return this[this._];
+    return this[this._].script;
   }
 
   /**
@@ -37,7 +36,7 @@ export class ScriptPart extends Part {
    * @return {boolean}
    */
   scriptReady(){
-    return this[this._] !== null;
+    return this[this._].script !== null;
   }
 
   /**
@@ -56,9 +55,9 @@ export class ScriptPart extends Part {
     let script = this.innerText;
     // If there's no custom argument to use, don't prepare the function to expect one.
     if(scriptArg === null){
-      this[this._] = Function("component", script);
+      this[this._].script = Function("component", script);
     } else {
-      this[this._] = Function(scriptArg, "component", script);
+      this[this._].script = Function(scriptArg, "component", script);
     }
 
     // Clear the innertext as it shouldn't actually render.
@@ -95,5 +94,8 @@ export class ScriptPart extends Part {
       cb(componentObject);
     }
 
+  }
+
+  render() {
   }
 }

@@ -20,15 +20,14 @@
  *    a content component, an author component, some additional HTML, and gives access to the user
  *      to update those values if the user has permission.
  *
- * Card's don't have Observable Properties.
+ * Card's don't have Observable Properties by default.
  *  They only have two non-observed properties which are meant to be overridden,
  *    the static tag and the instance template.
- * Cards should use Components to manage other properties
+ * Cards should use Components to manage observable content
  *  That doesn't mean you shouldn't give your Card any Attributes.
  *  Just understand that there isn't anything currently in the app that will provide a benefit to doing so.
  *
  * @abstract
- * @todo Slot an optional style element. Thus allowing the Card to manage the styles of its components
  */
 export class Card extends HTMLElement {
   /**
@@ -47,17 +46,61 @@ export class Card extends HTMLElement {
    * The instance templates are tracked non-statically in order to allow custom-elements
    *    to be updated independently of each other.
    *
-   *  @abstract
+   *  You should override this property to set the template in your child class.
+   *    However, you can also provide a template tag to the inner html of your child class.
+   *    The contents of that tag will override the child's template.
+   *
    *  @return {string}
-   *  @throws If not overridden.
    */
   get template(){
-    // Override with child class
-    throw "Template Property MUST be overridden by child class.";
+    return this[this._].template;
+  }
+
+  /**
+   * Replace the current template
+   *
+   * @param {string} template The new template string
+   */
+  set template(template){
+    this[this._].template = template;
+  }
+
+  /**
+   * You can either override this property to provide a set style for the card,
+   *  or you can add a style tag to the card's template.
+   *
+   * @return {string}
+   */
+  get style(){
+    return this[this._].style;
+  }
+
+  /**
+   * Set the shadow style for the card's custom element.
+   *
+   * @param {string} style
+   */
+  set style(style){
+    this[this._].style = style;
+    this.querySelector("style").innerHTML = style;
   }
 
   constructor(){
     super();
+
+    this._ = Symbol(this.constructor.name);
+
+    this[this._] = {
+      template: ``,
+      style: ``
+    };
+
+
+    this.attachShadow({mode: 'open'});
+    this.shadowRoot.innerHTML = `
+        ${this.style}
+        <slot name="content"></slot>
+    `;
   }
 
   /**
@@ -66,6 +109,21 @@ export class Card extends HTMLElement {
    * Sets up event listeners to grab component events.
    */
   connectedCallback(){
+
+    let template = this.querySelector("template");
+
+    if(template){
+      this.template = template.innerText;
+      this.removeChild(template);
+    }
+
+    let style = this.querySelector("style");
+
+    if(style){
+      this.style = style.innerText;
+      this.removeChild(style);
+    }
+
     this.onConnected();
     this.addEventListener("ComponentReady", (component)=>{
       this.onComponentReady(component);
@@ -112,10 +170,14 @@ export class Card extends HTMLElement {
    */
   render(){
     if(this.template.trim() !== '' &&
-        this.template !== null &&
+        this.template != null &&
         typeof this.template !== 'undefined'
     ){
-      this.innerHTML = this.template;
+      this.innerHTML = `
+        <div slot="content">
+            ${this.template}
+        </div>
+      `;
     }
   }
 

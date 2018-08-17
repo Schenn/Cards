@@ -20,6 +20,8 @@ import {Card} from '../cards/Card.js';
 export class Part extends HTMLElement {
   constructor(){
     super();
+    this._ = Symbol(this.constructor.name);
+    this[this._] = {};
   }
 
   /**
