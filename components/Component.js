@@ -1,10 +1,4 @@
 /**
- * Unique ID
- * @type {number}
- */
-let unique = 0;
-
-/**
  * Components are base tools which a Cards application may use.
  * The Component Class provides the abstract and virtual methods which child classes should implement.
  *
