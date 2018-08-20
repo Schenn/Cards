@@ -14,6 +14,7 @@
 import {Card} from '../cards/Card.js';
 import {ComponentAddedEvent} from '../events/ComponentAddedEvent.js';
 import {ComponentRemovedEvent} from '../events/ComponentRemovedEvent.js';
+import {_debounce} from '../utilities/_debounce.js';
 
 export const ObservedElement = function(component){
 
@@ -25,7 +26,7 @@ export const ObservedElement = function(component){
       proxy: new Proxy(comp, {
         set: (comp, prop, value) => {
           // Don't infinite loop through setters.
-          if (comp.hasOwnProperty(prop) && comp[prop] !== value) {
+          if (prop in comp && comp[prop] !== value) {
             comp[prop] = value;
             if (observables.includes(prop)) {
               customElement.setAttribute(prop, value);
@@ -36,6 +37,33 @@ export const ObservedElement = function(component){
       }),
       component: comp
     };
+  };
+
+  const findEditables = function(el, comp){
+    let editables = el.querySelectorAll("[data-edit]");
+
+    let editMap = new Map();
+
+    editables.forEach((editableNode)=>{
+      let prop = editableNode.dataset.edit;
+      editMap.set(prop, editableNode);
+      if(observables.includes(prop)){
+        editableNode.setAttribute("contenteditable", "true");
+        editableNode.addEventListener("input", _debounce((e)=>{
+          comp.setAttribute(prop, e.target.innerText.trim());
+        }));
+        editableNode.addEventListener("blur", (e)=>{
+          editableNode.removeAttribute("data-editing");
+          comp.render();
+        });
+        editableNode.addEventListener("focus", (e)=>{
+          editableNode.setAttribute("data-editing", prop);
+        });
+        editableNode.innerText = comp.component[prop];
+      }
+
+    });
+    return editMap;
   };
 
   class CustomElement extends HTMLElement {
@@ -54,7 +82,8 @@ export const ObservedElement = function(component){
 
       this[this._] = {
         component: componentProxy(this),
-        content: document.createElement("component-content")
+        content: document.createElement("component-content"),
+        editables: null
       };
 
       // Attach our shadow root and set the initial default slots.
@@ -72,6 +101,8 @@ export const ObservedElement = function(component){
       return this[this._].component.proxy;
     }
 
+
+
     /**
      * When a component's custom element's attribute is changed
      *    Determine if it's an observed attribute and if so, set the value on the element's matching component.
@@ -81,10 +112,13 @@ export const ObservedElement = function(component){
      * @param {*} current
      */
     attributeChangedCallback(name, old, current){
-      if(observables.includes(name) && this[this._].component[name] !== current) {
+      if(observables.includes(name) && this.component[name] !== current) {
         // Sets the change on the actual component itself, not the proxy. This prevents change callback loops.
         this.component[name] = current;
-        this.render();
+
+        if(!(this[this._].editables.get(name) && this[this._].editables.get(name).hasAttribute("data-editing"))){
+          this.render();
+        }
       }
     }
 
@@ -141,6 +175,7 @@ export const ObservedElement = function(component){
 
     render(){
       this[this._].content.innerHTML = this.component.template;
+      this[this._].editables =findEditables(this[this._].content, this);
     }
 
     /**
