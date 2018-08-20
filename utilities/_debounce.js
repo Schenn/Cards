@@ -11,7 +11,7 @@
  *
  * Thanks to https://davidwalsh.name/function-debounce for the perfect debounce function.
  */
-export const _debounce = function(func, wait, immediate = false) {
+export const _debounce = function(func, wait=100, immediate = false) {
   let timeout;
   return function() {
     let context = this, args = arguments;
